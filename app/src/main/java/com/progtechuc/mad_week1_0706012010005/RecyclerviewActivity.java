@@ -1,29 +1,114 @@
 package com.progtechuc.mad_week1_0706012010005;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
 import model.User;
 
-public class RecyclerviewActivity extends AppCompatActivity {
+public class RecyclerviewActivity extends AppCompatActivity implements OnCardClickListener{
 
     private RecyclerView recyclerView_recyclerView;
     private ArrayList<User> dataUser;
     private UserRVAdapter adapter;
+    private FloatingActionButton recyclerView_FAB;
+    private TextView noData;
+    private ActivityResultLauncher<Intent> activityResultLauncher;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recyclerview);
         initView();
+        noDataView();
         setupRecyclerView();
-        addDummyData();
+        //addDummyData();
+        setCallback();
+        setListener();
 
+    }
+
+    private void setCallback() {
+        activityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        // Result code
+                        // 1 = New user success
+                        // 2 = Edit user success
+                        // 0 = Delete user success
+                        if (result.getResultCode() == 1) {
+                            User newUser = result.getData().getParcelableExtra("user");
+
+                            dataUser.add(newUser);
+                            adapter.notifyDataSetChanged();
+                            noDataView();
+                        } else if (result.getResultCode() == 2) {
+                            int position = result.getData().getIntExtra("position", -1);
+
+                            User user = result.getData().getParcelableExtra("user");
+                            dataUser.set(position, user);
+                            adapter.notifyDataSetChanged();
+                        } else if (result.getResultCode() == 10) {
+                            int position = result.getData().getIntExtra("position", -1);
+
+                            dataUser.remove(position);
+                            adapter.notifyDataSetChanged();
+                            noDataView();
+                        }
+                    }
+                });
+    }
+
+    private void noDataView() {
+        if (dataUser.isEmpty()){
+            recyclerView_recyclerView.setVisibility(View.GONE);
+            noData.setVisibility(View.VISIBLE);
+        }else{
+            recyclerView_recyclerView.setVisibility(View.VISIBLE);
+            noData.setVisibility(View.GONE);
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode==1){
+            if (resultCode==2){
+                User userBaru = data.getParcelableExtra("userBaru");
+                dataUser.add(userBaru);
+                adapter.notifyDataSetChanged();
+            }
+        }
+        noDataView();
+    }
+
+    private void setListener() {
+        recyclerView_FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), InputUserActivity.class);
+                startActivityForResult(intent, 1);
+            }
+        });
     }
 
     private void addDummyData() {
@@ -42,9 +127,23 @@ public class RecyclerviewActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        noData = findViewById(R.id.noData);
         recyclerView_recyclerView = findViewById(R.id.recyclerView_recyclerView);
         dataUser = new ArrayList<User>();
-        adapter = new UserRVAdapter(dataUser);
+        adapter = new UserRVAdapter(dataUser, this);
+        recyclerView_FAB = findViewById(R.id.recyclerView_FAB);
 
+    }
+
+    @Override
+    public void OnClick(int position) {
+        User user = dataUser.get(position);
+
+        Intent intent = new Intent(getBaseContext(), UserprofileActivity.class);
+        intent.putExtra("nama", user.getNama().toString().trim());
+        intent.putExtra("umur", String.valueOf(user.getUmur()));
+        intent.putExtra("kota", user.getKota().toString().trim());
+        intent.putExtra("position", position);
+        activityResultLauncher.launch(intent);
     }
 }
