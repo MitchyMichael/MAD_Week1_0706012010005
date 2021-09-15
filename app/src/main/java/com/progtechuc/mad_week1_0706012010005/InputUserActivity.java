@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.textfield.TextInputLayout;
@@ -18,13 +20,34 @@ public class InputUserActivity extends AppCompatActivity {
     private Button inputUser_saveButton;
     private Toolbar toolbar_userInput;
 
+    private String action;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input_user);
         initView();
+
+        Intent intent2 = getIntent();
+        action = intent2.getStringExtra("action");
+        //Toast.makeText(getBaseContext(), action, Toast.LENGTH_SHORT).show();
+
         setListener();
         toolbarBackButton();
+        terimaCode();
+
+    }
+
+    private void terimaCode() {
+        Intent intent = getIntent();
+        String nama = intent.getStringExtra("nama");
+        String umur = intent.getStringExtra("umur");
+        String kota = intent.getStringExtra("kota");
+
+        inputNama.getEditText().setText(nama);
+        inputUmur.getEditText().setText(umur);
+        inputKota.getEditText().setText(kota);
+
     }
 
     private void toolbarBackButton() {
@@ -37,6 +60,8 @@ public class InputUserActivity extends AppCompatActivity {
         });
     }
 
+
+
     private void setListener() {
         inputUser_saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,13 +70,27 @@ public class InputUserActivity extends AppCompatActivity {
                 String kota = inputKota.getEditText().getText().toString().trim();
                 int umur = Integer.parseInt(inputUmur.getEditText().getText().toString().trim());
                 User temp = new User(nama, kota, umur);
-
                 Intent intent = new Intent();
-                intent.putExtra("userBaru", temp);
-                setResult(2, intent);
-                finish();
+
+                if (action.equalsIgnoreCase("add")){
+
+                    intent.putExtra("userBaru", temp);
+                    setResult(2, intent);
+                    finish();
+                } else if (action.equalsIgnoreCase("edit")){
+                    //Toast.makeText(getBaseContext(), "Terserah apapun", Toast.LENGTH_SHORT).show();
+
+                    intent.putExtra("nama1", nama);
+                    intent.putExtra("kota1", kota);
+                    intent.putExtra("umur1", umur);
+                    setResult(50, intent);
+                    finish();
+                }
+
             }
         });
+
+
     }
 
     private void initView() {
@@ -60,7 +99,6 @@ public class InputUserActivity extends AppCompatActivity {
         inputKota = findViewById(R.id.inputKota);
         inputUser_saveButton = findViewById(R.id.inputUser_saveButton);
         toolbar_userInput = findViewById(R.id.toolbar_userInput);
-
 
     }
 }

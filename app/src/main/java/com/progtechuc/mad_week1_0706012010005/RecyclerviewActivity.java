@@ -49,17 +49,7 @@ public class RecyclerviewActivity extends AppCompatActivity implements OnCardCli
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
                     public void onActivityResult(ActivityResult result) {
-                        // Result code
-                        // 1 = New user success
-                        // 2 = Edit user success
-                        // 0 = Delete user success
-                        if (result.getResultCode() == 1) {
-                            User newUser = result.getData().getParcelableExtra("user");
-
-                            dataUser.add(newUser);
-                            adapter.notifyDataSetChanged();
-                            noDataView();
-                        } else if (result.getResultCode() == 2) {
+                        if (result.getResultCode() == 20) {
                             int position = result.getData().getIntExtra("position", -1);
 
                             User user = result.getData().getParcelableExtra("user");
@@ -69,6 +59,11 @@ public class RecyclerviewActivity extends AppCompatActivity implements OnCardCli
                             int position = result.getData().getIntExtra("position", -1);
 
                             dataUser.remove(position);
+                            adapter.notifyDataSetChanged();
+                            noDataView();
+                        } else if (result.getResultCode() == 2){
+                            User userBaru = result.getData().getParcelableExtra("userBaru");
+                            dataUser.add(userBaru);
                             adapter.notifyDataSetChanged();
                             noDataView();
                         }
@@ -86,27 +81,15 @@ public class RecyclerviewActivity extends AppCompatActivity implements OnCardCli
         }
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode==1){
-            if (resultCode==2){
-                User userBaru = data.getParcelableExtra("userBaru");
-                dataUser.add(userBaru);
-                adapter.notifyDataSetChanged();
-            }
-        }
-        noDataView();
-    }
-
     private void setListener() {
         recyclerView_FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), InputUserActivity.class);
-                startActivityForResult(intent, 1);
+                intent.putExtra("action", "add");
+
+                activityResultLauncher.launch(intent);
+
             }
         });
     }

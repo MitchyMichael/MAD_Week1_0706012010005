@@ -18,7 +18,7 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       app:navigationIcon="@android:drawable/ic_menu_revert"
-      app:title="Edit User"
+      app:title="User Creator"
       app:titleTextColor="@color/white" />
 
   <com.google.android.material.textfield.TextInputLayout
